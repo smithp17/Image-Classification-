@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import numpy as np
 import streamlit as st
+import gdown  # Optional if you're downloading the model dynamically
 
 # Set up the title and description
 st.title("Fruit and Vegetable Classifier")
@@ -9,7 +10,19 @@ st.header("Identify fruits and vegetables with a deep learning model!")
 st.text("Upload an image of a fruit or vegetable, and the model will predict what it is.")
 
 # Load the trained model
-model = load_model(r'C:\Users\Smith\OneDrive\Desktop\Fruits_Vegetables\Image_classify.keras')
+@st.cache_resource
+def load_fruit_vegetable_model():
+    # Example of downloading from Google Drive (Optional, replace with your URL)
+    # url = 'https://drive.google.com/uc?id=YOUR_FILE_ID'
+    # output = 'Image_classify.keras'
+    # gdown.download(url, output, quiet=False)
+    
+    # Load model from relative path in the deployed environment
+    model = load_model('Image_classify.keras')  # Ensure the model is in the same directory
+    return model
+
+# Load model
+model = load_fruit_vegetable_model()
 
 # Define the categories
 data_cat = [
@@ -26,10 +39,11 @@ data_cat = [
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # Load the image
+    # Load the image and preprocess it
     image_load = tf.keras.utils.load_img(uploaded_file, target_size=(180, 180))
     img_arr = tf.keras.utils.img_to_array(image_load)
-    img_bat = tf.expand_dims(img_arr, 0)
+    img_arr = img_arr / 255.0  # Normalize the image
+    img_bat = tf.expand_dims(img_arr, 0)  # Add batch dimension
 
     # Display the uploaded image
     st.image(image_load, caption='Uploaded Image', use_column_width=True)
