@@ -16,8 +16,8 @@ def load_fruit_vegetable_model():
     url = 'https://drive.google.com/uc?id=14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
     output = 'Image_classify.keras'
     
-    # Download the model from Google Drive
-    gdown.download(url, output, quiet=False, fuzzy=True)
+    # Download the model from Google Drive with confirmation enabled for large files
+    gdown.download(url, output, quiet=False, fuzzy=True, use_cookies=False)
 
     # Load the model
     model = load_model(output)
