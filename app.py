@@ -3,8 +3,8 @@ from tensorflow.keras.models import load_model
 import numpy as np
 import streamlit as st
 import requests
-from tqdm import tqdm
 import os
+from tqdm import tqdm
 
 # Helper function to download large files from Google Drive
 def download_file_from_google_drive(id, destination):
@@ -36,7 +36,6 @@ def save_response_content(response, destination):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
 
-
 # Set up the title and description
 st.title("Fruit and Vegetable Classifier")
 st.header("Identify fruits and vegetables with a deep learning model!")
@@ -45,7 +44,7 @@ st.text("Upload an image of a fruit or vegetable, and the model will predict wha
 # Load the trained model
 @st.cache_resource
 def load_fruit_vegetable_model():
-    file_id = '14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
+    file_id = '14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'  # Replace with your Google Drive file ID
     output = 'Image_classify.keras'
     
     # Check if the model already exists in the environment
@@ -53,9 +52,14 @@ def load_fruit_vegetable_model():
         st.write("Downloading model file...")
         download_file_from_google_drive(file_id, output)
 
-    # Verify the file size to ensure it's not corrupted
-    if os.path.getsize(output) < 1e6:  # Check if the file size is reasonable (e.g., 1MB)
-        st.error("The model file seems corrupted. Please re-upload it to Google Drive.")
+    # Check if the model was downloaded successfully
+    if os.path.exists(output):
+        # Ensure that the file size is larger than a minimum value to avoid corrupted file issues
+        if os.path.getsize(output) < 1e6:  # Example: 1 MB as a minimum file size
+            st.error("The downloaded model file seems corrupted or incomplete. Please re-upload it.")
+            return None
+    else:
+        st.error("Model file could not be found. Ensure the file is accessible and correctly downloaded.")
         return None
 
     # Load the model
