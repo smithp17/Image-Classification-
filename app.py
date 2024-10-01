@@ -9,7 +9,7 @@ st.header("Identify fruits and vegetables with a deep learning model!")
 st.text("Upload an image of a fruit or vegetable, and the model will predict what it is.")
 
 # Load the trained model
-model = load_model(r'C:\Users\Smith\Downloads\Fruits_Vegetables\Image_classify.keras')
+model = load_model(r'C:\Users\Smith\OneDrive\Desktop\Fruits_Vegetables\Image_classify.keras')
 
 # Define the categories
 data_cat = [
