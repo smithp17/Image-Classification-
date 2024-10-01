@@ -2,7 +2,39 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import numpy as np
 import streamlit as st
-import gdown
+import requests
+from tqdm import tqdm
+
+# Helper function to download large files from Google Drive
+def download_file_from_google_drive(id, destination):
+    URL = "https://drive.google.com/uc?export=download"
+    session = requests.Session()
+
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    save_response_content(response, destination)
+
+
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+    return None
+
+
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+
+    with open(destination, "wb") as f:
+        for chunk in tqdm(response.iter_content(CHUNK_SIZE)):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
 
 # Set up the title and description
 st.title("Fruit and Vegetable Classifier")
@@ -12,12 +44,11 @@ st.text("Upload an image of a fruit or vegetable, and the model will predict wha
 # Load the trained model
 @st.cache_resource
 def load_fruit_vegetable_model():
-    # Google Drive file ID for the model
-    url = 'https://drive.google.com/uc?id=14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
+    file_id = '14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
     output = 'Image_classify.keras'
     
-    # Download the model from Google Drive with confirmation enabled for large files
-    gdown.download(url, output, quiet=False, fuzzy=True, use_cookies=False)
+    # Download the model file from Google Drive
+    download_file_from_google_drive(file_id, output)
 
     # Load the model
     model = load_model(output)
