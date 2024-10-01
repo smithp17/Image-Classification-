@@ -4,5 +4,5 @@ pandas
 streamlit
 matplotlib
 scikit-learn
-keras==2.9.0
+keras==3.2.0
 pillow
