@@ -4,6 +4,7 @@ import numpy as np
 import streamlit as st
 import requests
 from tqdm import tqdm
+import os
 
 # Helper function to download large files from Google Drive
 def download_file_from_google_drive(id, destination):
@@ -47,8 +48,15 @@ def load_fruit_vegetable_model():
     file_id = '14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
     output = 'Image_classify.keras'
     
-    # Download the model file from Google Drive
-    download_file_from_google_drive(file_id, output)
+    # Check if the model already exists in the environment
+    if not os.path.exists(output):
+        st.write("Downloading model file...")
+        download_file_from_google_drive(file_id, output)
+
+    # Verify the file size to ensure it's not corrupted
+    if os.path.getsize(output) < 1e6:  # Check if the file size is reasonable (e.g., 1MB)
+        st.error("The model file seems corrupted. Please re-upload it to Google Drive.")
+        return None
 
     # Load the model
     model = load_model(output)
@@ -57,42 +65,44 @@ def load_fruit_vegetable_model():
 # Load model
 model = load_fruit_vegetable_model()
 
-# Define the categories
-data_cat = [
-    'apple', 'banana', 'beetroot', 'bell pepper', 'cabbage', 'capsicum', 
-    'carrot', 'cauliflower', 'chilli pepper', 'corn', 'cucumber', 
-    'eggplant', 'garlic', 'ginger', 'grapes', 'jalepeno', 'kiwi', 
-    'lemon', 'lettuce', 'mango', 'onion', 'orange', 'paprika', 
-    'pear', 'peas', 'pineapple', 'pomegranate', 'potato', 'raddish', 
-    'soy beans', 'spinach', 'sweetcorn', 'sweetpotato', 'tomato', 
-    'turnip', 'watermelon'
-]
+# Check if model loaded successfully
+if model is not None:
+    # Define the categories
+    data_cat = [
+        'apple', 'banana', 'beetroot', 'bell pepper', 'cabbage', 'capsicum', 
+        'carrot', 'cauliflower', 'chilli pepper', 'corn', 'cucumber', 
+        'eggplant', 'garlic', 'ginger', 'grapes', 'jalepeno', 'kiwi', 
+        'lemon', 'lettuce', 'mango', 'onion', 'orange', 'paprika', 
+        'pear', 'peas', 'pineapple', 'pomegranate', 'potato', 'raddish', 
+        'soy beans', 'spinach', 'sweetcorn', 'sweetpotato', 'tomato', 
+        'turnip', 'watermelon'
+    ]
 
-# File uploader for image upload
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    # File uploader for image upload
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-if uploaded_file is not None:
-    # Load the image and preprocess it
-    image_load = tf.keras.utils.load_img(uploaded_file, target_size=(180, 180))
-    img_arr = tf.keras.utils.img_to_array(image_load)
-    img_arr = img_arr / 255.0  # Normalize the image
-    
-    img_bat = tf.expand_dims(img_arr, 0)  # Add batch dimension
+    if uploaded_file is not None:
+        # Load the image and preprocess it
+        image_load = tf.keras.utils.load_img(uploaded_file, target_size=(180, 180))
+        img_arr = tf.keras.utils.img_to_array(image_load)
+        img_arr = img_arr / 255.0  # Normalize the image
+        
+        img_bat = tf.expand_dims(img_arr, 0)  # Add batch dimension
 
-    # Display the uploaded image
-    st.image(image_load, caption='Uploaded Image', use_column_width=True)
-    st.write("")
-    st.write("Classifying...")
+        # Display the uploaded image
+        st.image(image_load, caption='Uploaded Image', use_column_width=True)
+        st.write("")
+        st.write("Classifying...")
 
-    # Make a prediction when the user clicks the button
-    if st.button('Predict'):
-        predict = model.predict(img_bat)
-        score = tf.nn.softmax(predict[0])
+        # Make a prediction when the user clicks the button
+        if st.button('Predict'):
+            predict = model.predict(img_bat)
+            score = tf.nn.softmax(predict[0])
 
-        # Display the prediction
-        st.write(
-            f"**Prediction:** {data_cat[np.argmax(score)]} "
-            f"with an **accuracy** of {float(np.max(score)) * 100:.2f}%"
-        )
+            # Display the prediction
+            st.write(
+                f"**Prediction:** {data_cat[np.argmax(score)]} "
+                f"with an **accuracy** of {float(np.max(score)) * 100:.2f}%"
+            )
 else:
     st.text("Please upload an image to classify.")
