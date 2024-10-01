@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import numpy as np
 import streamlit as st
-import gdown  # Optional if you're downloading the model dynamically
+import gdown  # For downloading the model from Google Drive
 
 # Set up the title and description
 st.title("Fruit and Vegetable Classifier")
@@ -12,13 +12,15 @@ st.text("Upload an image of a fruit or vegetable, and the model will predict wha
 # Load the trained model
 @st.cache_resource
 def load_fruit_vegetable_model():
-    # Example of downloading from Google Drive (Optional, replace with your URL)
-    # url = 'https://drive.google.com/uc?id=YOUR_FILE_ID'
-    # output = 'Image_classify.keras'
-    # gdown.download(url, output, quiet=False)
+    # URL of the model stored in Google Drive
+    url = 'https://drive.google.com/uc?id=14PYrsgWeILvax9r2w5ZmAxONvAua_4mD'
+    output = 'Image_classify.keras'
     
-    # Load model from relative path in the deployed environment
-    model = load_model('Image_classify.keras')  # Ensure the model is in the same directory
+    # Download the model if it doesn't exist
+    gdown.download(url, output, quiet=False)
+
+    # Load the model
+    model = load_model(output)
     return model
 
 # Load model
@@ -43,6 +45,7 @@ if uploaded_file is not None:
     image_load = tf.keras.utils.load_img(uploaded_file, target_size=(180, 180))
     img_arr = tf.keras.utils.img_to_array(image_load)
     img_arr = img_arr / 255.0  # Normalize the image
+    
     img_bat = tf.expand_dims(img_arr, 0)  # Add batch dimension
 
     # Display the uploaded image
