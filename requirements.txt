@@ -6,3 +6,4 @@ matplotlib
 scikit-learn
 keras==2.9.0  # Adjusted Keras version to match TensorFlow 2.9.x
 pillow
+gdown
